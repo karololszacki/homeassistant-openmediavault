@@ -28,6 +28,7 @@ from homeassistant.helpers import selector
 
 from . import session_handoff, totp
 from .const import (
+    CONF_INVENTORY_INTERVAL,
     CONF_MAX_CONSECUTIVE_FAILURES,
     CONF_REBOOT_REPAIR_DISABLED,
     CONF_SCAN_INTERVAL,
@@ -45,6 +46,7 @@ from .const import (
     CONF_SMART_POLLING_DISABLED,
     CONF_TOTP_SECRET,
     CONF_UPDATE_TRACKING_DISABLED,
+    DEFAULT_INVENTORY_INTERVAL,
     DEFAULT_MAX_CONSECUTIVE_FAILURES,
     DEFAULT_PORT,
     DEFAULT_SCAN_INTERVAL,
@@ -398,6 +400,13 @@ class OMVOptionsFlow(OptionsFlow):
                         self._entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
                     ),
                 ): vol.All(int, vol.Range(min=10, max=86400)),
+                vol.Optional(
+                    CONF_INVENTORY_INTERVAL,
+                    default=self._entry.options.get(
+                        CONF_INVENTORY_INTERVAL,
+                        DEFAULT_INVENTORY_INTERVAL,
+                    ),
+                ): vol.All(int, vol.Range(min=60, max=86400)),
                 vol.Optional(
                     CONF_SMART_POLLING_DISABLED,
                     default=self._entry.options.get(CONF_SMART_POLLING_DISABLED, False),

@@ -42,6 +42,12 @@ CONF_REBOOT_REPAIR_DISABLED = "reboot_repair_disabled"
 # disks can spin down. CONF_SMART_INTERVAL defaults to the scan interval.
 CONF_SMART_INTERVAL = "smart_interval"
 CONF_SMART_POLLING_DISABLED = "smart_polling_disabled"
+# Inventory polling control — FileSystemMgmt.enumerateFilesystems makes OMV
+# run a full 'blkid' scan server-side, which blocks in uninterruptible disk
+# wait on a degrading disk. Decouple it from the scan interval the same way
+# SMART was decoupled (the disk enumeration is covered by #116).
+CONF_INVENTORY_INTERVAL = "inventory_interval"
+DEFAULT_INVENTORY_INTERVAL = 300
 # Bounds the Issue #26 cached-data fallback (Issue #82) — after this many
 # consecutive failed polls, the coordinator raises UpdateFailed instead of
 # serving _last_valid_data indefinitely.

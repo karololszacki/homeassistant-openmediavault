@@ -1,449 +1,451 @@
 {
-    "config": {
-        "step": {
-            "user": {
-                "title": "Connect to OpenMediaVault",
-                "data": {
-                    "host": "Host",
-                    "username": "Username",
-                    "password": "Password",
-                    "port": "Port",
-                    "ssl": "Use SSL",
-                    "verify_ssl": "Verify SSL certificate"
-                },
-                "data_description": {
-                    "host": "IP address or hostname — no http(s):// prefix, no port suffix (e.g. 192.168.1.100 or mynas.local)",
-                    "username": "OMV Admin Account (e.g. admin)",
-                    "password": "Your OMV account password",
-                    "port": "e.g. 80 for HTTP, 443 (or a custom port) when SSL is enabled",
-                    "ssl": "Enable if your OMV web interface is reachable via HTTPS",
-                    "verify_ssl": "Disable only when using a self-signed certificate"
-                }
-            },
-            "totp": {
-                "title": "Two-factor authentication",
-                "description": "Sign in with either a one-time verification code or your TOTP secret. A code is valid for this login only — after a Home Assistant restart or session expiry you will need to reauthenticate. The secret is stored and lets the integration sign in again automatically.",
-                "data": {
-                    "code": "Verification code",
-                    "totp_secret": "TOTP secret"
-                },
-                "data_description": {
-                    "code": "6-digit one-time code from your authenticator app. Requires reauthentication after a Home Assistant restart or session expiry.",
-                    "totp_secret": "Base32 secret from your authenticator setup — enables automatic re-logins, no reauthentication after restarts. Leave the code field empty when using this."
-                }
-            }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to OpenMediaVault",
+        "data": {
+          "host": "Host",
+          "username": "Username",
+          "password": "Password",
+          "port": "Port",
+          "ssl": "Use SSL",
+          "verify_ssl": "Verify SSL certificate"
         },
-        "error": {
-            "invalid_auth": "Invalid credentials",
-            "invalid_totp_code": "Invalid or expired verification code",
-            "cannot_connect": "Cannot connect to OMV",
-            "unknown": "Unknown error",
-            "invalid_totp_secret": "Invalid TOTP secret or the generated code was rejected",
-            "totp_code_or_secret_required": "Enter either a verification code or the TOTP secret (exactly one)"
+        "data_description": {
+          "host": "IP address or hostname — no http(s):// prefix, no port suffix (e.g. 192.168.1.100 or mynas.local)",
+          "username": "OMV Admin Account (e.g. admin)",
+          "password": "Your OMV account password",
+          "port": "e.g. 80 for HTTP, 443 (or a custom port) when SSL is enabled",
+          "ssl": "Enable if your OMV web interface is reachable via HTTPS",
+          "verify_ssl": "Disable only when using a self-signed certificate"
+        }
+      },
+      "totp": {
+        "title": "Two-factor authentication",
+        "description": "Sign in with either a one-time verification code or your TOTP secret. A code is valid for this login only — after a Home Assistant restart or session expiry you will need to reauthenticate. The secret is stored and lets the integration sign in again automatically.",
+        "data": {
+          "code": "Verification code",
+          "totp_secret": "TOTP secret"
+        },
+        "data_description": {
+          "code": "6-digit one-time code from your authenticator app. Requires reauthentication after a Home Assistant restart or session expiry.",
+          "totp_secret": "Base32 secret from your authenticator setup — enables automatic re-logins, no reauthentication after restarts. Leave the code field empty when using this."
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid credentials",
+      "invalid_totp_code": "Invalid or expired verification code",
+      "cannot_connect": "Cannot connect to OMV",
+      "unknown": "Unknown error",
+      "invalid_totp_secret": "Invalid TOTP secret or the generated code was rejected",
+      "totp_code_or_secret_required": "Enter either a verification code or the TOTP secret (exactly one)"
+    },
+    "abort": {
+      "already_configured": "This OpenMediaVault host is already configured. Use Reconfigure to update its host, port, SSL or two-factor authentication settings instead of adding it again.",
+      "unique_id_mismatch": "This account belongs to a different OpenMediaVault host than the one being reconfigured or reauthenticated.",
+      "reconfigure_successful": "OpenMediaVault settings updated successfully.",
+      "reauth_successful": "Reauthenticated with OpenMediaVault successfully."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "scan_interval": "Scan interval (seconds)",
+          "reboot_repair_disabled": "Disable reboot required notification",
+          "update_tracking_disabled": "Disable update tracking",
+          "smart_interval": "SMART polling interval (seconds)",
+          "inventory_interval": "Filesystem inventory refresh interval (seconds)",
+          "smart_polling_disabled": "Disable SMART polling",
+          "max_consecutive_failures": "Max. consecutive failed polls",
+          "selected_disks": "Selected disks",
+          "selected_filesystems": "Selected filesystems",
+          "selected_services": "Selected services",
+          "selected_network_interfaces": "Selected network interfaces",
+          "selected_raids": "Selected RAIDs",
+          "selected_zfs_pools": "Selected ZFS pools",
+          "selected_compose_projects": "Selected Compose projects",
+          "selected_containers": "Selected containers",
+          "selected_vms": "Selected VMs",
+          "selected_cron_jobs": "Cron jobs with trigger button"
+        },
+        "data_description": {
+          "reboot_repair_disabled": "When enabled, the Home Assistant repair notification for a pending OMV reboot is suppressed. Useful when a reboot cannot be performed immediately, e.g. because VMs are running on the NAS.",
+          "update_tracking_disabled": "When enabled, no Home Assistant update entity is created for OMV package updates. The 'Available package updates' sensor keeps reporting the pending count regardless.",
+          "smart_interval": "How often SMART data (status, attributes, disk temperature) is read. Reading SMART wakes disks from standby, so a larger value lets disks spin down for power saving. Defaults to the scan interval.",
+          "inventory_interval": "How often the filesystem inventory is read from OMV. That call makes OMV run a full 'blkid' scan, which blocks in uninterruptible disk wait on a degrading disk, so a larger value reduces the load on a failing disk. Defaults to 300 seconds.",
+          "smart_polling_disabled": "When enabled, SMART is never polled. Disks are never woken by this integration, but SMART status, SMART attributes and disk temperature entities become unavailable.",
+          "max_consecutive_failures": "How many consecutive failed polls to bridge with cached data before entities become unavailable. Set high to restore the previous unbounded behavior.",
+          "selected_cron_jobs": "Creates a button for each selected user-defined cron job. Warning: pressing such a button runs the job's arbitrary shell command on the NAS. Default: none."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "cpu_utilization": {
+        "name": "CPU utilization"
+      },
+      "memory_usage": {
+        "name": "Memory usage"
+      },
+      "memory_total": {
+        "name": "Memory total"
+      },
+      "memory_used": {
+        "name": "Memory used"
+      },
+      "cpu_temperature": {
+        "name": "CPU temperature"
+      },
+      "uptime": {
+        "name": "Uptime"
+      },
+      "available_package_updates": {
+        "name": "Available package updates"
+      },
+      "load_average_1min": {
+        "name": "Load average (1 min)"
+      },
+      "load_average_5min": {
+        "name": "Load average (5 min)"
+      },
+      "load_average_15min": {
+        "name": "Load average (15 min)"
+      },
+      "docker_container_total": {
+        "name": "Docker containers total"
+      },
+      "docker_container_running": {
+        "name": "Docker containers running"
+      },
+      "docker_container_not_running": {
+        "name": "Docker containers not running"
+      },
+      "compose_project_status": {
+        "name": "{resource} status"
+      },
+      "compose_project_total": {
+        "name": "{resource} containers total"
+      },
+      "compose_project_running": {
+        "name": "{resource} containers running"
+      },
+      "compose_project_not_running": {
+        "name": "{resource} containers not running"
+      },
+      "container_state": {
+        "name": "{resource} state"
+      },
+      "container_status_detail": {
+        "name": "{resource} status detail"
+      },
+      "container_created_at": {
+        "name": "{resource} created"
+      },
+      "container_started_at": {
+        "name": "{resource} started"
+      },
+      "container_version": {
+        "name": "{resource} version"
+      },
+      "container_volume_size": {
+        "name": "Volume {resource} size"
+      },
+      "disk_temperature": {
+        "name": "{resource} temperature"
+      },
+      "disk_wear_level": {
+        "name": "{resource} wear level"
+      },
+      "disk_data_written": {
+        "name": "{resource} data written"
+      },
+      "disk_data_read": {
+        "name": "{resource} data read"
+      },
+      "disk_used_percent": {
+        "name": "{resource} used %"
+      },
+      "disk_free_percent": {
+        "name": "{resource} free %"
+      },
+      "disk_used_size": {
+        "name": "{resource} used size"
+      },
+      "disk_free_size": {
+        "name": "{resource} free size"
+      },
+      "disk_total_size": {
+        "name": "{resource} total size"
+      },
+      "filesystem_used_percent": {
+        "name": "{resource} used %"
+      },
+      "filesystem_free_percent": {
+        "name": "{resource} free %"
+      },
+      "filesystem_used_size": {
+        "name": "{resource} used size"
+      },
+      "filesystem_free_size": {
+        "name": "{resource} free size"
+      },
+      "filesystem_total_size": {
+        "name": "{resource} total size"
+      },
+      "network_tx": {
+        "name": "{resource} TX"
+      },
+      "network_rx": {
+        "name": "{resource} RX"
+      },
+      "raid": {
+        "name": "{resource} RAID health"
+      },
+      "zfs_pool": {
+        "name": "{resource} ZFS pool"
+      },
+      "zfs_pool_last_scrub": {
+        "name": "{resource} last scrub"
+      },
+      "zfs_pool_dataset_count": {
+        "name": "{resource} datasets"
+      },
+      "zfs_pool_snapshot_count": {
+        "name": "{resource} snapshots"
+      },
+      "zfs_dataset_used": {
+        "name": "{resource} used"
+      },
+      "tempmon_temperature": {
+        "name": "{resource} temperature"
+      },
+      "vm_state": {
+        "name": "{resource} state"
+      },
+      "ups_battery_charge": {
+        "name": "UPS battery charge"
+      },
+      "ups_battery_runtime": {
+        "name": "UPS battery runtime"
+      },
+      "ups_load": {
+        "name": "UPS load"
+      }
+    },
+    "binary_sensor": {
+      "update_available": {
+        "name": "Update available"
+      },
+      "reboot_required": {
+        "name": "Reboot required"
+      },
+      "reachable": {
+        "name": "Reachable"
+      },
+      "service": {
+        "name": "{resource} service"
+      },
+      "disk_bad_sectors": {
+        "name": "{resource} bad sectors"
+      },
+      "disk_crc_errors": {
+        "name": "{resource} CRC errors"
+      },
+      "vm_running": {
+        "name": "{resource} running"
+      },
+      "ups_on_battery": {
+        "name": "UPS on battery"
+      },
+      "rsync_job_enabled": {
+        "name": "rsync {resource} enabled"
+      },
+      "zfs_pool_scrub_active": {
+        "name": "{resource} scrub active"
+      }
+    },
+    "update": {
+      "omv_system_update": {
+        "name": "System update"
+      }
+    },
+    "button": {
+      "reboot": {
+        "name": "Reboot"
+      },
+      "shutdown": {
+        "name": "Shutdown"
+      },
+      "apply_config": {
+        "name": "Apply Configuration"
+      },
+      "compose_up": {
+        "name": "compose up"
+      },
+      "compose_down": {
+        "name": "compose down"
+      },
+      "compose_start": {
+        "name": "Start"
+      },
+      "compose_stop": {
+        "name": "Stop"
+      },
+      "compose_pull": {
+        "name": "Pull"
+      },
+      "compose_image_prune": {
+        "name": "docker image prune"
+      },
+      "compose_container_prune": {
+        "name": "docker container prune"
+      },
+      "container_restart": {
+        "name": "Restart"
+      },
+      "vm_restart": {
+        "name": "Restart"
+      },
+      "rsync_run": {
+        "name": "Run rsync {name}"
+      },
+      "cron_run": {
+        "name": "Run cron {name}"
+      },
+      "zfs_scrub": {
+        "name": "Scrub {name}"
+      },
+      "standby": {
+        "name": "Standby"
+      },
+      "wake_on_lan": {
+        "name": "Wake on LAN {interface}"
+      }
+    }
+  },
+  "exceptions": {
+    "reboot_blocked_config_dirty": {
+      "message": "Cannot reboot: OMV has pending configuration changes ({modules}). Press 'Apply Configuration' first."
+    },
+    "apply_config_failed": {
+      "message": "Failed to apply OMV configuration changes. Check the OMV logs."
+    },
+    "container_command_failed": {
+      "message": "Failed to {command} container {resource}. Check the OMV logs."
+    },
+    "vm_command_failed": {
+      "message": "Failed to {command} VM {resource}. Check the OMV logs."
+    },
+    "rsync_execute_failed": {
+      "message": "Failed to start rsync job {name}. Check the OMV logs."
+    },
+    "cron_execute_failed": {
+      "message": "Failed to run cron job {name}. Check the OMV logs."
+    },
+    "zfs_scrub_failed": {
+      "message": "Failed to start scrub on pool {name}. Check the OMV logs."
+    },
+    "compose_command_failed": {
+      "message": "Failed to run {command} on compose project {resource}. Check the OMV logs."
+    },
+    "service_entry_not_found": {
+      "message": "No loaded OpenMediaVault config entry matches this service call."
+    },
+    "service_entry_ambiguous": {
+      "message": "Multiple OpenMediaVault config entries are loaded. Specify 'config_entry_id'."
+    },
+    "service_project_not_found": {
+      "message": "Compose project {project} was not found on the OMV host."
+    },
+    "service_job_not_found": {
+      "message": "Rsync job {job} was not found on the OMV host."
+    },
+    "invalid_container_reference": {
+      "message": "Container reference {container} contains characters that are not valid in a Docker name or id."
+    },
+    "wol_failed": {
+      "message": "Failed to send the Wake-on-LAN magic packet for {interface}."
+    }
+  },
+  "services": {
+    "container_command": {
+      "name": "Container command",
+      "description": "Runs a command on a Docker container managed by the OMV compose plugin.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV instance",
+          "description": "Config entry to target. Optional when only one OMV instance is configured."
+        },
+        "container": {
+          "name": "Container",
+          "description": "Container name or id."
+        },
+        "command": {
+          "name": "Command",
+          "description": "Command to run on the container."
+        }
+      }
+    },
+    "compose_command": {
+      "name": "Compose project command",
+      "description": "Runs a command on a Docker compose project managed by the OMV compose plugin.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV instance",
+          "description": "Config entry to target. Optional when only one OMV instance is configured."
+        },
+        "project": {
+          "name": "Project",
+          "description": "Compose project name or uuid."
+        },
+        "command": {
+          "name": "Command",
+          "description": "Command to run on the project."
+        }
+      }
+    },
+    "apply_config": {
+      "name": "Apply configuration",
+      "description": "Applies pending OpenMediaVault configuration changes.",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV instance",
+          "description": "Config entry to target. Optional when only one OMV instance is configured."
+        }
+      }
+    },
+    "run_rsync_job": {
+      "name": "Run rsync job",
+      "description": "Starts a configured OpenMediaVault rsync job (fire-and-forget).",
+      "fields": {
+        "config_entry_id": {
+          "name": "OMV instance",
+          "description": "Config entry to target. Optional when only one OMV instance is configured."
+        },
+        "job": {
+          "name": "Job",
+          "description": "Rsync job name or uuid."
+        }
+      }
+    }
+  },
+  "issues": {
+    "reboot_required": {
+      "title": "Reboot required – {title}",
+      "fix_flow": {
+        "step": {
+          "confirm": {
+            "title": "Reboot {title}?",
+            "description": "Click **Submit** to reboot {title} now. The system will be briefly unavailable."
+          }
         },
         "abort": {
-            "already_configured": "This OpenMediaVault host is already configured. Use Reconfigure to update its host, port, SSL or two-factor authentication settings instead of adding it again.",
-            "unique_id_mismatch": "This account belongs to a different OpenMediaVault host than the one being reconfigured or reauthenticated.",
-            "reconfigure_successful": "OpenMediaVault settings updated successfully.",
-            "reauth_successful": "Reauthenticated with OpenMediaVault successfully."
+          "config_dirty": "Reboot aborted: {title} has pending configuration changes ({modules}). Apply the configuration first."
         }
-    },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "scan_interval": "Scan interval (seconds)",
-                    "reboot_repair_disabled": "Disable reboot required notification",
-                    "update_tracking_disabled": "Disable update tracking",
-                    "smart_interval": "SMART polling interval (seconds)",
-                    "smart_polling_disabled": "Disable SMART polling",
-                    "max_consecutive_failures": "Max. consecutive failed polls",
-                    "selected_disks": "Selected disks",
-                    "selected_filesystems": "Selected filesystems",
-                    "selected_services": "Selected services",
-                    "selected_network_interfaces": "Selected network interfaces",
-                    "selected_raids": "Selected RAIDs",
-                    "selected_zfs_pools": "Selected ZFS pools",
-                    "selected_compose_projects": "Selected Compose projects",
-                    "selected_containers": "Selected containers",
-                    "selected_vms": "Selected VMs",
-                    "selected_cron_jobs": "Cron jobs with trigger button"
-                },
-                "data_description": {
-                    "reboot_repair_disabled": "When enabled, the Home Assistant repair notification for a pending OMV reboot is suppressed. Useful when a reboot cannot be performed immediately, e.g. because VMs are running on the NAS.",
-                    "update_tracking_disabled": "When enabled, no Home Assistant update entity is created for OMV package updates. The 'Available package updates' sensor keeps reporting the pending count regardless.",
-                    "smart_interval": "How often SMART data (status, attributes, disk temperature) is read. Reading SMART wakes disks from standby, so a larger value lets disks spin down for power saving. Defaults to the scan interval.",
-                    "smart_polling_disabled": "When enabled, SMART is never polled. Disks are never woken by this integration, but SMART status, SMART attributes and disk temperature entities become unavailable.",
-                    "max_consecutive_failures": "How many consecutive failed polls to bridge with cached data before entities become unavailable. Set high to restore the previous unbounded behavior.",
-                    "selected_cron_jobs": "Creates a button for each selected user-defined cron job. Warning: pressing such a button runs the job's arbitrary shell command on the NAS. Default: none."
-                }
-            }
-        }
-    },
-    "entity": {
-        "sensor": {
-            "cpu_utilization": {
-                "name": "CPU utilization"
-            },
-            "memory_usage": {
-                "name": "Memory usage"
-            },
-            "memory_total": {
-                "name": "Memory total"
-            },
-            "memory_used": {
-                "name": "Memory used"
-            },
-            "cpu_temperature": {
-                "name": "CPU temperature"
-            },
-            "uptime": {
-                "name": "Uptime"
-            },
-            "available_package_updates": {
-                "name": "Available package updates"
-            },
-            "load_average_1min": {
-                "name": "Load average (1 min)"
-            },
-            "load_average_5min": {
-                "name": "Load average (5 min)"
-            },
-            "load_average_15min": {
-                "name": "Load average (15 min)"
-            },
-            "docker_container_total": {
-                "name": "Docker containers total"
-            },
-            "docker_container_running": {
-                "name": "Docker containers running"
-            },
-            "docker_container_not_running": {
-                "name": "Docker containers not running"
-            },
-            "compose_project_status": {
-                "name": "{resource} status"
-            },
-            "compose_project_total": {
-                "name": "{resource} containers total"
-            },
-            "compose_project_running": {
-                "name": "{resource} containers running"
-            },
-            "compose_project_not_running": {
-                "name": "{resource} containers not running"
-            },
-            "container_state": {
-                "name": "{resource} state"
-            },
-            "container_status_detail": {
-                "name": "{resource} status detail"
-            },
-            "container_created_at": {
-                "name": "{resource} created"
-            },
-            "container_started_at": {
-                "name": "{resource} started"
-            },
-            "container_version": {
-                "name": "{resource} version"
-            },
-            "container_volume_size": {
-                "name": "Volume {resource} size"
-            },
-            "disk_temperature": {
-                "name": "{resource} temperature"
-            },
-            "disk_wear_level": {
-                "name": "{resource} wear level"
-            },
-            "disk_data_written": {
-                "name": "{resource} data written"
-            },
-            "disk_data_read": {
-                "name": "{resource} data read"
-            },
-            "disk_used_percent": {
-                "name": "{resource} used %"
-            },
-            "disk_free_percent": {
-                "name": "{resource} free %"
-            },
-            "disk_used_size": {
-                "name": "{resource} used size"
-            },
-            "disk_free_size": {
-                "name": "{resource} free size"
-            },
-            "disk_total_size": {
-                "name": "{resource} total size"
-            },
-            "filesystem_used_percent": {
-                "name": "{resource} used %"
-            },
-            "filesystem_free_percent": {
-                "name": "{resource} free %"
-            },
-            "filesystem_used_size": {
-                "name": "{resource} used size"
-            },
-            "filesystem_free_size": {
-                "name": "{resource} free size"
-            },
-            "filesystem_total_size": {
-                "name": "{resource} total size"
-            },
-            "network_tx": {
-                "name": "{resource} TX"
-            },
-            "network_rx": {
-                "name": "{resource} RX"
-            },
-            "raid": {
-                "name": "{resource} RAID health"
-            },
-            "zfs_pool": {
-                "name": "{resource} ZFS pool"
-            },
-            "zfs_pool_last_scrub": {
-                "name": "{resource} last scrub"
-            },
-            "zfs_pool_dataset_count": {
-                "name": "{resource} datasets"
-            },
-            "zfs_pool_snapshot_count": {
-                "name": "{resource} snapshots"
-            },
-            "zfs_dataset_used": {
-                "name": "{resource} used"
-            },
-            "tempmon_temperature": {
-                "name": "{resource} temperature"
-            },
-            "vm_state": {
-                "name": "{resource} state"
-            },
-            "ups_battery_charge": {
-                "name": "UPS battery charge"
-            },
-            "ups_battery_runtime": {
-                "name": "UPS battery runtime"
-            },
-            "ups_load": {
-                "name": "UPS load"
-            }
-        },
-        "binary_sensor": {
-            "update_available": {
-                "name": "Update available"
-            },
-            "reboot_required": {
-                "name": "Reboot required"
-            },
-            "reachable": {
-                "name": "Reachable"
-            },
-            "service": {
-                "name": "{resource} service"
-            },
-            "disk_bad_sectors": {
-                "name": "{resource} bad sectors"
-            },
-            "disk_crc_errors": {
-                "name": "{resource} CRC errors"
-            },
-            "vm_running": {
-                "name": "{resource} running"
-            },
-            "ups_on_battery": {
-                "name": "UPS on battery"
-            },
-            "rsync_job_enabled": {
-                "name": "rsync {resource} enabled"
-            },
-            "zfs_pool_scrub_active": {
-                "name": "{resource} scrub active"
-            }
-        },
-        "update": {
-            "omv_system_update": {
-                "name": "System update"
-            }
-        },
-        "button": {
-            "reboot": {
-                "name": "Reboot"
-            },
-            "shutdown": {
-                "name": "Shutdown"
-            },
-            "apply_config": {
-                "name": "Apply Configuration"
-            },
-            "compose_up": {
-                "name": "compose up"
-            },
-            "compose_down": {
-                "name": "compose down"
-            },
-            "compose_start": {
-                "name": "Start"
-            },
-            "compose_stop": {
-                "name": "Stop"
-            },
-            "compose_pull": {
-                "name": "Pull"
-            },
-            "compose_image_prune": {
-                "name": "docker image prune"
-            },
-            "compose_container_prune": {
-                "name": "docker container prune"
-            },
-            "container_restart": {
-                "name": "Restart"
-            },
-            "vm_restart": {
-                "name": "Restart"
-            },
-            "rsync_run": {
-                "name": "Run rsync {name}"
-            },
-            "cron_run": {
-                "name": "Run cron {name}"
-            },
-            "zfs_scrub": {
-                "name": "Scrub {name}"
-            },
-            "standby": {
-                "name": "Standby"
-            },
-            "wake_on_lan": {
-                "name": "Wake on LAN {interface}"
-            }
-        }
-    },
-    "exceptions": {
-        "reboot_blocked_config_dirty": {
-            "message": "Cannot reboot: OMV has pending configuration changes ({modules}). Press 'Apply Configuration' first."
-        },
-        "apply_config_failed": {
-            "message": "Failed to apply OMV configuration changes. Check the OMV logs."
-        },
-        "container_command_failed": {
-            "message": "Failed to {command} container {resource}. Check the OMV logs."
-        },
-        "vm_command_failed": {
-            "message": "Failed to {command} VM {resource}. Check the OMV logs."
-        },
-        "rsync_execute_failed": {
-            "message": "Failed to start rsync job {name}. Check the OMV logs."
-        },
-        "cron_execute_failed": {
-            "message": "Failed to run cron job {name}. Check the OMV logs."
-        },
-        "zfs_scrub_failed": {
-            "message": "Failed to start scrub on pool {name}. Check the OMV logs."
-        },
-        "compose_command_failed": {
-            "message": "Failed to run {command} on compose project {resource}. Check the OMV logs."
-        },
-        "service_entry_not_found": {
-            "message": "No loaded OpenMediaVault config entry matches this service call."
-        },
-        "service_entry_ambiguous": {
-            "message": "Multiple OpenMediaVault config entries are loaded. Specify 'config_entry_id'."
-        },
-        "service_project_not_found": {
-            "message": "Compose project {project} was not found on the OMV host."
-        },
-        "service_job_not_found": {
-            "message": "Rsync job {job} was not found on the OMV host."
-        },
-        "invalid_container_reference": {
-            "message": "Container reference {container} contains characters that are not valid in a Docker name or id."
-        },
-        "wol_failed": {
-            "message": "Failed to send the Wake-on-LAN magic packet for {interface}."
-        }
-    },
-    "services": {
-        "container_command": {
-            "name": "Container command",
-            "description": "Runs a command on a Docker container managed by the OMV compose plugin.",
-            "fields": {
-                "config_entry_id": {
-                    "name": "OMV instance",
-                    "description": "Config entry to target. Optional when only one OMV instance is configured."
-                },
-                "container": {
-                    "name": "Container",
-                    "description": "Container name or id."
-                },
-                "command": {
-                    "name": "Command",
-                    "description": "Command to run on the container."
-                }
-            }
-        },
-        "compose_command": {
-            "name": "Compose project command",
-            "description": "Runs a command on a Docker compose project managed by the OMV compose plugin.",
-            "fields": {
-                "config_entry_id": {
-                    "name": "OMV instance",
-                    "description": "Config entry to target. Optional when only one OMV instance is configured."
-                },
-                "project": {
-                    "name": "Project",
-                    "description": "Compose project name or uuid."
-                },
-                "command": {
-                    "name": "Command",
-                    "description": "Command to run on the project."
-                }
-            }
-        },
-        "apply_config": {
-            "name": "Apply configuration",
-            "description": "Applies pending OpenMediaVault configuration changes.",
-            "fields": {
-                "config_entry_id": {
-                    "name": "OMV instance",
-                    "description": "Config entry to target. Optional when only one OMV instance is configured."
-                }
-            }
-        },
-        "run_rsync_job": {
-            "name": "Run rsync job",
-            "description": "Starts a configured OpenMediaVault rsync job (fire-and-forget).",
-            "fields": {
-                "config_entry_id": {
-                    "name": "OMV instance",
-                    "description": "Config entry to target. Optional when only one OMV instance is configured."
-                },
-                "job": {
-                    "name": "Job",
-                    "description": "Rsync job name or uuid."
-                }
-            }
-        }
-    },
-    "issues": {
-        "reboot_required": {
-            "title": "Reboot required – {title}",
-            "fix_flow": {
-                "step": {
-                    "confirm": {
-                        "title": "Reboot {title}?",
-                        "description": "Click **Submit** to reboot {title} now. The system will be briefly unavailable."
-                    }
-                },
-                "abort": {
-                    "config_dirty": "Reboot aborted: {title} has pending configuration changes ({modules}). Apply the configuration first."
-                }
-            }
-        }
+      }
     }
+  }
 }

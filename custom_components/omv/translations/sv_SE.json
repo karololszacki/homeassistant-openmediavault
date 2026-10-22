@@ -25,6 +25,7 @@
         "data": {
           "scan_interval": "Skanningsintervall (sekunder)",
           "smart_interval": "SMART-pollningsintervall (sekunder)",
+          "inventory_interval": "Filesystem inventory refresh interval (seconds)",
           "smart_polling_disabled": "Inaktivera SMART-pollning",
           "selected_disks": "Valda diskar",
           "selected_filesystems": "Valda filsystem",
@@ -39,6 +40,7 @@
         },
         "data_description": {
           "smart_interval": "Hur ofta SMART-data (status, attribut, disktemperatur) läses. Att läsa SMART väcker diskar ur vänteläge, så ett större värde låter diskar stängas av för att spara ström. Standard: skanningsintervallet.",
+          "inventory_interval": "How often the filesystem inventory is read from OMV. That call makes OMV run a full 'blkid' scan, which blocks in uninterruptible disk wait on a degrading disk, so a larger value reduces the load on a failing disk. Defaults to 300 seconds.",
           "smart_polling_disabled": "När aktiverat pollas SMART aldrig. Diskar väcks aldrig av denna integration, men entiteterna för SMART-status, SMART-attribut och disktemperatur blir otillgängliga.",
           "selected_cron_jobs": "Skapar en knapp för varje valt användardefinierat cron-jobb. Varning: när knappen trycks körs jobbets godtyckliga skalkommando på NAS:en. Standard: inga."
         }

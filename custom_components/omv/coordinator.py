@@ -18,6 +18,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    CONF_INVENTORY_INTERVAL,
     CONF_MAX_CONSECUTIVE_FAILURES,
     CONF_SCAN_INTERVAL,
     CONF_SELECTED_COMPOSE_PROJECTS,
@@ -32,6 +33,7 @@ from .const import (
     CONF_SELECTED_ZFS_POOLS,
     CONF_SMART_INTERVAL,
     CONF_SMART_POLLING_DISABLED,
+    DEFAULT_INVENTORY_INTERVAL,
     DEFAULT_MAX_CONSECUTIVE_FAILURES,
     DEFAULT_SCAN_INTERVAL,
     DOMAIN,
@@ -168,6 +170,16 @@ class OMVDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         # data so disk entities stay populated in between.
         self._disk_inventory_cache: list[dict[str, Any]] = []
         self._disk_inventory_last_poll: float | None = None
+        # Filesystem inventory cache: FileSystemMgmt.enumerateFilesystems
+        # makes OMV run a full 'blkid' scan server-side. On a degrading disk
+        # that scan blocks in uninterruptible disk wait and every concurrent
+        # poll (this integration, the OMV web UI) piles up another stuck
+        # scan. The raw filesystem records are therefore fetched at most once
+        # per CONF_INVENTORY_INTERVAL seconds and cached; the normalisation
+        # runs on every cycle from the cached data so the filesystem entities
+        # stay populated in between.
+        self._filesystem_inventory_cache: list[dict[str, Any]] = []
+        self._filesystem_inventory_last_poll: float | None = None
         # Device-registry bookkeeping (Issue #83): the HA device id (not the
         # OMV identifier tuple) of the pre-registered hub device and each
         # compose-project device, used as `via_device_id` by entity.py.
@@ -405,9 +417,7 @@ class OMVDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self._hwinfo = await self._async_get_hwinfo()
                 self._hwinfo_counter = 0
 
-            raw_filesystems = await self._fetch_or_empty(
-                "FileSystemMgmt", "enumerateFilesystems", collection="filesystem"
-            )
+            raw_filesystems = await self._async_fetch_filesystem_inventory()
             raw_services = await self._fetch_or_empty("Services", "getStatus", collection="service")
             raw_network = await self._fetch_or_empty("Network", "enumerateDevices", collection="network")
             raw_disks = await self._async_fetch_disk_inventory()
@@ -921,6 +931,43 @@ class OMVDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 interval,
             )
         return self._disk_inventory_cache
+
+    async def _async_fetch_filesystem_inventory(self) -> list[dict[str, Any]]:
+        """Fetch FileSystemMgmt.enumerateFilesystems on its own interval and cache.
+
+        On OMV, FileSystemMgmt.enumerateFilesystems makes the server run a full
+        ``blkid`` scan. On a degrading disk that scan blocks in
+        uninterruptible (D-state) disk wait and can not be killed, so every
+        concurrent poll — this integration, the OMV web UI — piles up another
+        stuck scan. The raw records are therefore fetched at most once per
+        ``CONF_INVENTORY_INTERVAL`` seconds; between refreshes the cached
+        records are returned so the filesystem entities stay populated without
+        issuing a new RPC.
+
+        A failed fetch is not cached but reported as a degraded collection, so
+        the registry cleanup does not prune the filesystems (Issue #118).
+
+        Returns:
+            The (possibly cached) raw filesystem records.
+        """
+        options = self.config_entry.options
+        interval = options.get(CONF_INVENTORY_INTERVAL, DEFAULT_INVENTORY_INTERVAL)
+        now = time.monotonic()
+        if self._filesystem_inventory_last_poll is None or (now - self._filesystem_inventory_last_poll) >= interval:
+            records = await self._fetch_or_empty("FileSystemMgmt", "enumerateFilesystems", collection="filesystem")
+            if "filesystem" in self._degraded_collections:
+                # Do not cache a failed fetch: retry on the next refresh (Issue #118).
+                return []
+            self._filesystem_inventory_cache = records
+            self._filesystem_inventory_last_poll = now
+            _LOGGER.debug("Filesystem inventory refreshed (interval=%ss)", interval)
+        else:
+            _LOGGER.debug(
+                "Using cached filesystem inventory (%.0fs since last poll, interval=%ss)",
+                now - self._filesystem_inventory_last_poll,
+                interval,
+            )
+        return self._filesystem_inventory_cache
 
     async def _async_collect_smart(self, disks: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Refresh SMART data on its own interval and apply it to the disks.

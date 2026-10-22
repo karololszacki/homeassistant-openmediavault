@@ -25,6 +25,7 @@
         "data": {
           "scan_interval": "Scaninterval (seconden)",
           "smart_interval": "SMART-pollinginterval (seconden)",
+          "inventory_interval": "Filesystem inventory refresh interval (seconds)",
           "smart_polling_disabled": "SMART-polling uitschakelen",
           "selected_disks": "Geselecteerde schijven",
           "selected_filesystems": "Geselecteerde bestandssystemen",
@@ -39,6 +40,7 @@
         },
         "data_description": {
           "smart_interval": "Hoe vaak SMART-gegevens (status, attributen, schijftemperatuur) worden gelezen. Het lezen van SMART haalt schijven uit stand-by, dus een hogere waarde laat schijven uitschakelen om energie te besparen. Standaard: het scaninterval.",
+          "inventory_interval": "How often the filesystem inventory is read from OMV. That call makes OMV run a full 'blkid' scan, which blocks in uninterruptible disk wait on a degrading disk, so a larger value reduces the load on a failing disk. Defaults to 300 seconds.",
           "smart_polling_disabled": "Indien ingeschakeld wordt SMART nooit gepolld. Schijven worden door deze integratie niet gewekt, maar de entiteiten voor SMART-status, SMART-attributen en schijftemperatuur worden niet beschikbaar.",
           "selected_cron_jobs": "Maakt een knop voor elke geselecteerde door de gebruiker gedefinieerde cron-taak. Waarschuwing: het indrukken van zo'n knop voert het willekeurige shell-commando van de taak uit op de NAS. Standaard: geen."
         }
